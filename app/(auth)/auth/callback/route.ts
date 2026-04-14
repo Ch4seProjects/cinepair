@@ -15,7 +15,5 @@ export async function GET(request: Request) {
     }
   }
 
-  //   Return to login or error page if something goes wrong
-  //   TODO: Add error page
-  return NextResponse.redirect(`${origin}/login`);
+  return NextResponse.redirect(`${origin}/error`);
 }
