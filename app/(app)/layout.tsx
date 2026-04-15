@@ -2,8 +2,8 @@ import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
-import Link from "next/link";
 import { Suspense } from "react";
+import Link from "next/link";
 
 export default function ProtectedLayout({
   children,
@@ -27,7 +27,8 @@ export default function ProtectedLayout({
             )}
           </div>
         </nav>
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
+
+        <div className="flex-1 flex flex-col gap-20 w-full max-w-5xl p-5">
           {children}
         </div>
 
