@@ -46,6 +46,9 @@ export function SignUpForm({
         password: formData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            username: formData.username,
+          },
         },
       });
       if (error) throw error;
@@ -78,6 +81,10 @@ export function SignUpForm({
                 />
               </div>
               <div className="grid gap-2">
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" type="text" {...register("username")} />
+              </div>
+              <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                 </div>
@@ -100,6 +107,7 @@ export function SignUpForm({
               {formStateErrors && (
                 <p className="text-sm text-red-500">
                   {formStateErrors.email?.message ||
+                    formStateErrors.username?.message ||
                     formStateErrors.password?.message ||
                     formStateErrors.repeatPassword?.message}
                 </p>
