@@ -93,7 +93,7 @@ export function LoginForm({
                 />
               </div>
               {formStateErrors && (
-                <p className="text-sm text-red-500">
+                <p className="text-sm text-destructive">
                   {formStateErrors.email?.message ||
                     formStateErrors.password?.message}
                 </p>

@@ -43,22 +43,24 @@ export function CreatePairDialog({ userId }: CreatePairDialogProps) {
     mode: "onChange",
   });
 
+  // TODO: add toasts
   const onCreatePairSubmit = async (formData: CreatePairFormData) => {
     if (!formData.displayName.trim()) return;
     setLoading(true);
 
-    try {
-      const pair = await createPair({
-        userId,
-        displayName: formData.displayName.trim(),
-      });
-      setCreatedPair(pair);
-      // console.log("formData: ", formData);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "An error occurred");
-    } finally {
+    const result = await createPair({
+      userId,
+      displayName: formData.displayName.trim(),
+    });
+
+    if (!result.success) {
+      toast.error(result.error.message);
       setLoading(false);
+      return;
     }
+
+    setCreatedPair(result.data);
+    setLoading(false);
   };
 
   const handleClose = (isOpen: boolean) => {
@@ -75,28 +77,32 @@ export function CreatePairDialog({ userId }: CreatePairDialogProps) {
         <Button size="sm">Create Pair</Button>
       </DialogTrigger>
       <DialogPortal>
-        <DialogOverlay className="fixed inset-0 bg-black/50 z-40" />
-        <DialogContent className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 bg-white p-6 shadow-lg rounded-lg text-black">
-          <DialogTitle className="text-2xl font-bold">
+        <DialogOverlay className="fixed inset-0 bg-background/50 z-40" />
+        <DialogContent className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 bg-card-foreground text-card-foreground p-6 shadow-lg rounded-lg">
+          <DialogTitle className="text-2xl font-bold text-background">
             Create a Pair
           </DialogTitle>
-          <DialogDescription className="text-sm">
+          <DialogDescription className="text-sm text-muted-foreground">
             Create a pair and share the invite code with your partner.
           </DialogDescription>
           {/* Step 1 — fill in name */}
           {!createdPair && (
             <>
               <div className="flex flex-col gap-2 mt-4">
-                <Label htmlFor="display-name" className="text-sm font-normal">
+                <Label
+                  htmlFor="display-name"
+                  className="text-sm font-normal text-background"
+                >
                   Couple Name
                 </Label>
                 <Input
                   id="display-name"
                   placeholder="e.g. Jake & Maria"
+                  className="text-background"
                   {...register("displayName")}
                 />
                 {formStateErrors && (
-                  <p className="text-sm text-red-500">
+                  <p className="text-sm text-destructive">
                     {formStateErrors.displayName?.message}
                   </p>
                 )}
@@ -108,7 +114,6 @@ export function CreatePairDialog({ userId }: CreatePairDialogProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-white"
                   onClick={handleSubmit(onCreatePairSubmit)}
                   disabled={loading || !isValid}
                 >
@@ -143,7 +148,6 @@ export function CreatePairDialog({ userId }: CreatePairDialogProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-white"
                   onClick={() => window.location.reload()}
                 >
                   Done

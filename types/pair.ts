@@ -24,18 +24,6 @@ export interface PairMemberWithProfile extends PairMember {
 // Helper function — param types
 // ------------------------------------------------------------
 
-/** getMyPair params */
-export interface GetMyPairParams {
-  /** UUID of the currently authenticated user */
-  userId: string;
-}
-
-/** getPairMembers params */
-export interface GetPairMembersParams {
-  /** UUID of the pair to fetch members for */
-  pairId: string;
-}
-
 /** createPair params */
 export interface CreatePairParams {
   /** UUID of the authenticated user creating the pair */
@@ -73,6 +61,10 @@ export type CreatePairResult = Pair;
 
 /** Returned by joinPair */
 export type JoinPairResult = Pick<Pair, "id">;
+
+export type ActionResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: { code: string; message: string } };
 
 // ------------------------------------------------------------
 // UI state

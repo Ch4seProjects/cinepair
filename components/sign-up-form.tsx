@@ -105,7 +105,7 @@ export function SignUpForm({
                 />
               </div>
               {formStateErrors && (
-                <p className="text-sm text-red-500">
+                <p className="text-sm text-destructive">
                   {formStateErrors.email?.message ||
                     formStateErrors.username?.message ||
                     formStateErrors.password?.message ||

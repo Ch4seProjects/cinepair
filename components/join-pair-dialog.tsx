@@ -43,16 +43,17 @@ export function JoinPairDialog({ userId }: JoinPairDialogProps) {
     if (!formData.inviteCode.trim()) return;
     setLoading(true);
 
-    try {
-      await joinPair({ userId, inviteCode: formData.inviteCode });
-      setOpen(false);
-      window.location.reload(); // refresh server component
-      // console.log("formData: ", formData);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "An error occurred");
-    } finally {
+    const result = await joinPair({ userId, inviteCode: formData.inviteCode });
+
+    if (!result.success) {
+      toast.error(result.error.message);
       setLoading(false);
+      return;
     }
+
+    setOpen(false);
+    setLoading(false);
+    window.location.reload();
   };
 
   return (
@@ -61,23 +62,29 @@ export function JoinPairDialog({ userId }: JoinPairDialogProps) {
         <Button size="sm">Join Pair</Button>
       </DialogTrigger>
       <DialogPortal>
-        <DialogOverlay className="fixed inset-0 bg-black/50 z-40" />
-        <DialogContent className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 bg-white p-6 shadow-lg rounded-lg text-black">
-          <DialogTitle className="text-2xl font-bold">Join a Pair</DialogTitle>
-          <DialogDescription className="text-sm">
+        <DialogOverlay className="fixed inset-0 bg-background/50 z-40" />
+        <DialogContent className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 bg-card-foreground text-card-foreground p-6 shadow-lg rounded-lg">
+          <DialogTitle className="text-2xl font-bold text-background">
+            Join a Pair
+          </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
             Enter the invite code shared by your partner.
           </DialogDescription>
           <div className="flex flex-col gap-2 mt-4">
-            <Label htmlFor="code" className="text-sm font-normal">
+            <Label
+              htmlFor="code"
+              className="text-sm font-normal text-background"
+            >
               Invite Code
             </Label>
             <Input
               id="code"
               placeholder="e.g. AB12CD34"
+              className="text-background"
               {...register("inviteCode")}
             />
             {formStateErrors && (
-              <p className="text-sm text-red-500">
+              <p className="text-sm text-destructive">
                 {formStateErrors.inviteCode?.message}
               </p>
             )}
@@ -87,9 +94,8 @@ export function JoinPairDialog({ userId }: JoinPairDialogProps) {
               <Button size="sm">Cancel</Button>
             </DialogClose>
             <Button
-              variant="outline"
               size="sm"
-              className="text-white"
+              variant="outline"
               onClick={handleSubmit(onJoinPairSubmit)}
               disabled={loading || !isValid}
             >

@@ -6,13 +6,60 @@ import {
   JoinPairParams,
   CreatePairResult,
   JoinPairResult,
+  GetMyPairResult,
+  GetPairMembersResult,
+  ActionResult,
 } from "@/types";
+
+export async function getMyPair(): Promise<ActionResult<GetMyPairResult>> {
+  const supabase = await createServerSideClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data, error } = await supabase
+    .from("pair_members")
+    .select(`
+      pair_id,
+      pairs (id, name, invite_code, slug, is_public, created_at),
+      joined_at
+    `)
+    .eq("user_id", user?.id ?? "")
+    .maybeSingle();
+
+  if (error) {
+    return { success: false, error: { code: error.code, message: error.message } };
+  }
+
+  return { success: true, data: data?.pairs ?? null };
+}
+
+
+export async function getPairMembers(): Promise<
+  ActionResult<GetPairMembersResult>
+> {
+  const supabase = await createServerSideClient();
+
+  const { data, error } = await supabase
+    .from("pair_members")
+    .select(
+      "user_id, profiles (display_name, avatar_url), id, pair_id, joined_at",
+    );
+
+  if (error) {
+    return {
+      success: false,
+      error: { code: error.code, message: error.message },
+    };
+  }
+
+  return { success: true, data: data ?? [] };
+}
 
 // Create a new pair — makes the user the first member
 export async function createPair({
   userId,
   displayName,
-}: CreatePairParams): Promise<CreatePairResult> {
+}: CreatePairParams): Promise<ActionResult<CreatePairResult>> {
   const supabase = await createServerSideClient();
 
   // 1. Create the pair row
@@ -22,23 +69,32 @@ export async function createPair({
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    return {
+      success: false,
+      error: { code: error.code, message: error.message },
+    };
+  }
 
   // 2. Add creator as first member
   const { error: memberError } = await supabase
     .from("pair_members")
     .insert({ pair_id: pair.id, user_id: userId });
 
-  if (memberError) throw memberError;
+  if (memberError)
+    return {
+      success: false,
+      error: { code: memberError.code, message: memberError.message },
+    };
 
-  return pair; // pair.invite_code is the shareable code
+  return { success: true, data: pair };
 }
 
 // Join an existing pair via invite code
 export async function joinPair({
   userId,
   inviteCode,
-}: JoinPairParams): Promise<JoinPairResult> {
+}: JoinPairParams): Promise<ActionResult<JoinPairResult>> {
   const supabase = await createServerSideClient();
 
   // 1. Look up the pair
@@ -48,7 +104,11 @@ export async function joinPair({
     .eq("invite_code", inviteCode.toUpperCase().trim())
     .single();
 
-  if (error || !pair) throw new Error("Invalid invite code.");
+  if (error || !pair)
+    return {
+      success: false,
+      error: { code: "NOT_FOUND", message: "Invalid invite code." },
+    };
 
   // 2. Check pair isn't already full (max 2 members)
   const { count } = await supabase
@@ -56,7 +116,11 @@ export async function joinPair({
     .select("*", { count: "exact", head: true })
     .eq("pair_id", pair.id);
 
-  if (count && count >= 2) throw new Error("This pair is already full.");
+  if (count && count >= 2)
+    return {
+      success: false,
+      error: { code: "PAIR_FULL", message: "This pair is already full." },
+    };
 
   // 3. Join the pair
   const { error: joinError } = await supabase
@@ -64,11 +128,16 @@ export async function joinPair({
     .insert({ pair_id: pair.id, user_id: userId });
 
   if (joinError) {
-    // unique constraint on user_id = already in a pair
     if (joinError.code === "23505")
-      throw new Error("You are already in a pair.");
-    throw joinError;
+      return {
+        success: false,
+        error: { code: "23505", message: "You are already in a pair." },
+      };
+    return {
+      success: false,
+      error: { code: joinError.code, message: joinError.message },
+    };
   }
 
-  return pair;
+  return { success: true, data: pair };
 }
