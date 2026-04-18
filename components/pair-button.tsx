@@ -2,6 +2,8 @@ import { getUserData } from "@/lib/user";
 import { getMyPair } from "@/app/actions/pair-actions";
 import { JoinPairDialog } from "./join-pair-dialog";
 import { CreatePairDialog } from "./create-pair-dialog";
+import { UpdatePairDialog } from "./update-pair-dialog";
+import { DeletePairDialog } from "./delete-pair-dialog";
 
 export default async function PairButton() {
   const user = await getUserData();
@@ -16,7 +18,15 @@ export default async function PairButton() {
   }
 
   if (result.data) {
-    return <div>You are in a pair!</div>;
+    return (
+      <div>
+        <div>You are in a pair!</div>
+        <div>Pair: {result.data.name}</div>
+        <div>Code: {result.data.invite_code}</div>
+        <UpdatePairDialog prevName={result.data.name} />
+        <DeletePairDialog />
+      </div>
+    );
   }
 
   return (

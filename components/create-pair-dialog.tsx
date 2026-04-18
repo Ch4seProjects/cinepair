@@ -59,6 +59,7 @@ export function CreatePairDialog({ userId }: CreatePairDialogProps) {
       return;
     }
 
+    toast.success(result.message);
     setCreatedPair(result.data);
     setLoading(false);
   };

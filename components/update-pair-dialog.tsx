@@ -14,18 +14,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// import { joinPair } from "@/lib/pairing";
-import { joinPair } from "@/app/actions/pair-actions";
-import { JoinPairFormData, joinPairSchema } from "@/lib/validations/pair";
+import { updatePair } from "@/app/actions/pair-actions";
+import { updatePairSchema, UpdatePairFormData } from "@/lib/validations/pair";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-interface JoinPairDialogProps {
-  userId: string;
+interface UpdatePairDialogProps {
+  prevName: string | null;
 }
 
-export function JoinPairDialog({ userId }: JoinPairDialogProps) {
+export function UpdatePairDialog({ prevName }: UpdatePairDialogProps) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -34,16 +33,20 @@ export function JoinPairDialog({ userId }: JoinPairDialogProps) {
     handleSubmit,
     reset,
     formState: { errors: formStateErrors, isValid },
-  } = useForm<JoinPairFormData>({
-    resolver: zodResolver(joinPairSchema),
+  } = useForm<UpdatePairFormData>({
+    resolver: zodResolver(updatePairSchema),
     mode: "onChange",
   });
 
-  const onJoinPairSubmit = async (formData: JoinPairFormData) => {
-    if (!formData.inviteCode.trim()) return;
+  const onUpdatePairSubmit = async (formData: UpdatePairFormData) => {
+    if (!formData.name.trim()) return;
+    if (formData.name.trim() === prevName) {
+      toast.info("No changes to save.");
+      return;
+    }
     setLoading(true);
 
-    const result = await joinPair({ userId, inviteCode: formData.inviteCode });
+    const result = await updatePair({ name: formData.name });
 
     if (!result.success) {
       toast.error(result.error.message);
@@ -60,33 +63,34 @@ export function JoinPairDialog({ userId }: JoinPairDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">Join Pair</Button>
+        <Button size="sm">Update</Button>
       </DialogTrigger>
       <DialogPortal>
         <DialogOverlay className="fixed inset-0 bg-background/50 z-40" />
         <DialogContent className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 bg-card-foreground text-card-foreground p-6 shadow-lg rounded-lg">
           <DialogTitle className="text-2xl font-bold text-background">
-            Join a Pair
+            Update Pair
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Enter the invite code shared by your partner.
+            Update the name of your pair.
           </DialogDescription>
           <div className="flex flex-col gap-2 mt-4">
             <Label
               htmlFor="code"
               className="text-sm font-normal text-background"
             >
-              Invite Code
+              Name
             </Label>
             <Input
               id="code"
-              placeholder="e.g. AB12CD34"
+              placeholder="Pair Name"
               className="text-background"
-              {...register("inviteCode")}
+              defaultValue={prevName ?? ""}
+              {...register("name")}
             />
             {formStateErrors && (
               <p className="text-sm text-destructive">
-                {formStateErrors.inviteCode?.message}
+                {formStateErrors.name?.message}
               </p>
             )}
           </div>
@@ -97,10 +101,10 @@ export function JoinPairDialog({ userId }: JoinPairDialogProps) {
             <Button
               size="sm"
               variant="outline"
-              onClick={handleSubmit(onJoinPairSubmit)}
+              onClick={handleSubmit(onUpdatePairSubmit)}
               disabled={loading || !isValid}
             >
-              {loading ? "Joining..." : "Join"}
+              {loading ? "Updating..." : "Update"}
             </Button>
           </div>
         </DialogContent>

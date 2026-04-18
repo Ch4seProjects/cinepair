@@ -8,5 +8,10 @@ export const createPairSchema = z.object({
   displayName: z.string().min(2, "Display name must be at least 2 characters"),
 });
 
+export const updatePairSchema = z.object({
+  name: z.string().min(2, "Display name must be at least 2 characters"),
+});
+
 export type JoinPairFormData = z.infer<typeof joinPairSchema>;
 export type CreatePairFormData = z.infer<typeof createPairSchema>;
+export type UpdatePairFormData = z.infer<typeof updatePairSchema>;

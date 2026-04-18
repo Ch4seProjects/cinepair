@@ -46,6 +46,10 @@ export interface JoinPairParams {
   inviteCode: string;
 }
 
+export interface UpdatePairParams {
+  name: string;
+}
+
 // ------------------------------------------------------------
 // Helper function — return types
 // ------------------------------------------------------------
@@ -62,8 +66,10 @@ export type CreatePairResult = Pair;
 /** Returned by joinPair */
 export type JoinPairResult = Pick<Pair, "id">;
 
+export type UpdatePairResult = Pair;
+
 export type ActionResult<T> =
-  | { success: true; data: T }
+  | { success: true; data: T; message?: string }
   | { success: false; error: { code: string; message: string } };
 
 // ------------------------------------------------------------
