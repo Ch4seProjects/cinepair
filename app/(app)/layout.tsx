@@ -4,6 +4,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
 import { Suspense } from "react";
 import Link from "next/link";
+import Navigation from "@/components/navigation";
 
 export default function ProtectedLayout({
   children,
@@ -16,8 +17,9 @@ export default function ProtectedLayout({
         <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>CinePair</Link>
+              <Link href={"/home"}>CinePair</Link>
             </div>
+            <Navigation />
             {!hasEnvVars ? (
               <EnvVarWarning />
             ) : (
